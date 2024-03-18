@@ -13,7 +13,7 @@ def capture_image():
     rv, image = camera_capture.read()
     print(f"Image Dimensions: {image.shape}")
     camera_capture.release()
-    cv2.imwrite(f'/merklebot/job_data/camera_{time.time()}.jpg', img)
+    cv2.imwrite(f'/merklebot/job_data/camera_{time.time()}.jpg', image)
 
 
 def main():
