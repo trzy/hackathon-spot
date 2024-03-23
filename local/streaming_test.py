@@ -7,9 +7,10 @@ import pyaudio
 import wave
 
 import ai
+from server.client import transcribe
 
 
-def main():
+async def main():
     t0 = time.perf_counter()
     audio = pyaudio.PyAudio()
     sampling_rate = 44100
@@ -32,8 +33,8 @@ def main():
 
     print(f"{t1-t0} seconds")
 
-    print(ai.transcribe(filepath="test.wav"))
+    print(await transcribe(filepath="test.wav"))
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

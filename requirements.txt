@@ -1,2 +1,4 @@
 openai
 deepgram-sdk
+aiohttp
+python-multipart
