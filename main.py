@@ -1,7 +1,12 @@
 import os
 import time
+
+import openai
 from spot_controller import SpotController
 import cv2
+
+import ai
+
 
 ROBOT_IP = "10.0.0.3"#os.environ['ROBOT_IP']
 SPOT_USERNAME = "admin"#os.environ['SPOT_USERNAME']
@@ -23,6 +28,12 @@ def main():
     cmd = f'arecord -vv --format=cd --device={os.environ["AUDIO_INPUT_DEVICE"]} -r 48000 --duration=10 -c 1 {sample_name}'
     print(cmd)
     os.system(cmd)
+
+    # Transcribe audio
+    print(f"Transcription: {ai.transcribe(filepath=sample_name)}")
+
+    exit()
+
     print("Playing sound")
     os.system(f"ffplay -nodisp -autoexit -loglevel quiet {sample_name}")
     

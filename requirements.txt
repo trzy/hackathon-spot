@@ -1,1 +1,3 @@
-
+openai
+deepgram-sdk
+pyaudio
