@@ -1,3 +1,4 @@
+import asyncio
 import os
 import time
 
@@ -21,14 +22,14 @@ def capture_image():
     cv2.imwrite(f'/merklebot/job_data/camera_{time.time()}.jpg', image)
 
 
-def main():
+async def main():
     start_time = time.time()
     while time.time() - start_time < 30:
         filepath="recording.wav"
         chunk_duration = 5
         cmd = f'arecord -vv --format=cd --device={os.environ["AUDIO_INPUT_DEVICE"]} -r 48000 --duration={chunk_duration} -c 1 {filepath}'
         os.system(cmd)
-        print(f"Transcription: {transcribe(filepath=filepath)}")
+        print(f"Transcription: {await transcribe(filepath=filepath)}")
 
     exit()
 
@@ -63,4 +64,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
