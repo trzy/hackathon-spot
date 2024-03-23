@@ -1,3 +1,2 @@
 openai
 deepgram-sdk
-pyaudio
