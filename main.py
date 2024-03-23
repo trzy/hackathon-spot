@@ -5,7 +5,7 @@ import openai
 from spot_controller import SpotController
 import cv2
 
-import ai
+from server.client import transcribe
 
 
 ROBOT_IP = "10.0.0.3"#os.environ['ROBOT_IP']
@@ -22,15 +22,13 @@ def capture_image():
 
 
 def main():
-    #example of using micro and speakers
-    print("Start recording audio")
-    sample_name = "aaaa.wav"
-    cmd = f'arecord -vv --format=cd --device={os.environ["AUDIO_INPUT_DEVICE"]} -r 48000 --duration=10 -c 1 {sample_name}'
-    print(cmd)
-    os.system(cmd)
-
-    # Transcribe audio
-    print(f"Transcription: {ai.transcribe(filepath=sample_name)}")
+    start_time = time.time()
+    while time.time() - start_time < 30:
+        filepath="recording.wav"
+        chunk_duration = 5
+        cmd = f'arecord -vv --format=cd --device={os.environ["AUDIO_INPUT_DEVICE"]} -r 48000 --duration={chunk_duration} -c 1 {filepath}'
+        os.system(cmd)
+        print(f"Transcription: {transcribe(filepath=filepath)}")
 
     exit()
 
