@@ -1,12 +1,15 @@
 import asyncio
 import os
 import time
+from typing import List, Tuple
 
 import openai
 from spot_controller import SpotController
 import cv2
+import numpy as np
 
-from server.client import transcribe
+from server.client import transcribe, process_speech
+from server.models import SpotCommand
 
 
 ROBOT_IP = "10.0.0.3"#os.environ['ROBOT_IP']
@@ -21,15 +24,52 @@ def capture_image():
     camera_capture.release()
     cv2.imwrite(f'/merklebot/job_data/camera_{time.time()}.jpg', image)
 
+async def get_commands() -> List[SpotCommand]:
+    filepath="recording.wav"
+    chunk_duration = 5
+    cmd = f'arecord -vv --format=cd --device={os.environ["AUDIO_INPUT_DEVICE"]} -r 48000 --duration={chunk_duration} -c 1 {filepath}'
+    os.system(cmd)
+    sentence = await transcribe(filepath=filepath)
+    commands = await process_speech(text=sentence)
+    print(f"Transcription: {sentence}")
+    print(f"Commands: {commands}")
+    return commands
+
+def normalize(v):
+    norm = np.linalg.norm(v)
+    if norm == 0: 
+       return v
+    return v / norm
+
+def rotate(v: np.ndarray, degrees: float) -> np.ndarray:
+    angle = degrees * np.pi / 180
+    r = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
+    return np.matmul(r, v)
+
+def compute_trajectory(commands: List[SpotCommand], current_pos: np.ndarray, forward: np.ndarray) -> Tuple[List[np.ndarray], np.ndarray, np.ndarray]:
+    points = []
+    for command in commands:
+        if command.command == "WALK":
+            dir = -1.0 if command.dir == "backward" else 1.0
+            distance = min(command.amount, 3.0)
+            current_pos += normalize(dir * forward) * distance
+            points.append(current_pos.copy())
+        elif command.command == "TURN":
+            dir = -1.0 if command.dir == "right" else 1.0
+            degrees = abs(command.amount) * dir
+            forward = rotate(v=forward, degrees=degrees)
+    return (points, current_pos, forward)
 
 async def main():
-    start_time = time.time()
-    while time.time() - start_time < 30:
-        filepath="recording.wav"
-        chunk_duration = 5
-        cmd = f'arecord -vv --format=cd --device={os.environ["AUDIO_INPUT_DEVICE"]} -r 48000 --duration={chunk_duration} -c 1 {filepath}'
-        os.system(cmd)
-        print(f"Transcription: {await transcribe(filepath=filepath)}")
+    with SpotController(username=SPOT_USERNAME, password=SPOT_PASSWORD, robot_ip=ROBOT_IP) as spot:
+        current_pos = np.array([0.0,0.0])   # x is forward, y is sideways
+        current_forward = np.array([1.0,0.0])
+        start_time = time.time()
+        while time.time() - start_time < 60:
+            commands = await get_commands()
+            points, current_pos, current_forward = compute_trajectory(commands=commands, current_pos=current_pos, forward=current_forward)
+            for point in points:
+                spot.move_to_goal(goal_x=point[0], goal_y=point[1])
 
     exit()
 

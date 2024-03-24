@@ -29,7 +29,7 @@ TOOLS = [
                     },
                     "distance": {
                         "type": "number",
-                        "description": "Meters to traverse, if specified, else 0",
+                        "description": "Distance in feet to traverse, if specified, else 0",
                     },
                     "duration": {
                         "type": "number",
@@ -61,7 +61,21 @@ TOOLS = [
                 "required": [ "direction", "angle" ]
             },
         },
-    }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "bow_command",
+            "description": "Produces command object for bowing gesture",
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "dance_command",
+            "description": "Produces command object for dancing",
+        },
+    },
 ]
 
 class Role(str, Enum):
@@ -95,6 +109,8 @@ def process_speech(client: openai.OpenAI, text: str) -> List[SpotCommand]:
     available_functions = {
         "walk_command": _handle_walk_command,
         "turn_command": _handle_turn_command,
+        "bow_command": _handle_bow_command,
+        "dance_command": _handle_dance_command,
     }
     if first_response_message.tool_calls:
         # Append initial response to history, which may include tool use
@@ -133,6 +149,12 @@ def _handle_walk_command(direction: str, distance: float, duration: float) -> st
 def _handle_turn_command(direction: str, angle: float) -> str:
     return f"TURN {direction} {angle}"
 
+def _handle_bow_command() -> str:
+    return f"BOW"
+
+def _handle_dance_command() -> str:
+    return f"DUST_OFF"
+
 def parse_float(text: str) -> float:
     try:
         return float(text)
@@ -147,7 +169,7 @@ def parse_commands(command_strings: List[str]) -> List[SpotCommand]:
             continue
         if parts[0] == "WALK":
             if len(parts) == 4:
-                amount = parse_float(parts[2])
+                amount = parse_float(parts[2]) * 0.3048
                 duration = parse_float(parts[3])
                 if amount <= 0 and duration <= 0:
                     continue
@@ -158,4 +180,8 @@ def parse_commands(command_strings: List[str]) -> List[SpotCommand]:
                 if amount <= 0:
                     continue
                 commands.append(SpotCommand(command="TURN", dir=parts[1], amount=amount, duration=0))
+        elif parts[0] == "BOW":
+            commands.append(SpotCommand(command="BOW", dir="unknown", amount=0, duration=0))
+        elif parts[0] == "DUST_OFF":
+            commands.append(SpotCommand(command="DUST_OFF", dir="unknown", amount=0, duration=0))
     return commands
