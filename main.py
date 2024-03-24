@@ -67,9 +67,19 @@ async def main():
         start_time = time.time()
         while time.time() - start_time < 60:
             commands = await get_commands()
-            points, current_pos, current_forward = compute_trajectory(commands=commands, current_pos=current_pos, forward=current_forward)
-            for point in points:
-                spot.move_to_goal(goal_x=point[0], goal_y=point[1])
+            # points, current_pos, current_forward = compute_trajectory(commands=commands, current_pos=current_pos, forward=current_forward)
+            # for point in points:
+            #     spot.move_to_goal(goal_x=point[0], goal_y=point[1])
+            for command in commands:
+                if command.command == "WALK":
+                    dir = -1.0 if command.dir == "backward" else 1.0
+                    distance = min(command.amount, 3.0)
+                    spot.move_to_goal(goal_x=distance * dir, goal_y=0)
+                elif command.command == "TURN":
+                    dir = -1.0 if command.dir == "right" else 1.0
+                    degrees = abs(command.amount) * dir
+                    radians = degrees * np.pi / 180.0
+                    spot.move_to_goal(goal_x=0, goal_y=0, rotation=radians)
 
     exit()
 

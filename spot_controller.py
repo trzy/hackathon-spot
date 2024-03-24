@@ -105,11 +105,11 @@ class SpotController:
                 return True
             time.sleep(0.5)
 
-    def move_to_goal(self, goal_x=0, goal_y=0):
+    def move_to_goal(self, goal_x=0, goal_y=0, rotation=0):
         cmd = RobotCommandBuilder.synchro_trajectory_command_in_body_frame(
             goal_x_rt_body=goal_x,
             goal_y_rt_body=goal_y,
-            goal_heading_rt_body=0,
+            goal_heading_rt_body=rotation,
             frame_tree_snapshot=self.robot.get_frame_tree_snapshot()
         )
         # cmd = RobotCommandBuilder.synchro_se2_trajectory_point_command(goal_x=goal_x, goal_y=goal_y, goal_heading=0,
