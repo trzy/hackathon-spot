@@ -1,10 +1,8 @@
-**This image contains basic commands to work with camera, microphone and speaker at Spot's computer**
+# Voice-Controlled Spot with Whisper and GPT
+*by Bart Trzynadlowski - March 23, 2024*
 
-## Image link
-Image link could be acquired in **packages** section of the main repository page
+[url=https://www.youtube.com/watch?v=-WNcbjUORMA]Click here for video of final result[/url].
 
-## How to use
-The container for this image should be runned with flags `--device /dev/video0` and `--device /dev/snd`.
-Also, environmental varialbes `-e SDL_AUDIODRIVER='alsa'`, `-e AUDIODEV='hw:1,0'`, `-e AUDIO_INPUT_DEVICE='hw:2,0'` shoud be added.
+Won the Robo-Hackathon at CircuitLaunch in Oakland today with this project. Unfortunately didn't have enough time to add proper streaming transcription support. Voice samples are sent in 5 second chunks, which means if a command straddles a boundary, it will likely be missed.
 
-Basic example contained in _main.py_ 
+Thanks a lot to [url=https://merklebot.com/]MerkleBot[/url] for organizing this. 
